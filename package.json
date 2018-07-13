@@ -1,0 +1,27 @@
+{
+  "name": "slackbot-server",
+  "version": "1.0.0",
+  "description": "NodeJS express server with git based installer for slack apps",
+  "main": "lib/clis.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrijnberk/slackbot-server.git"
+  },
+  "keywords": [
+    "NodeJS",
+    "Slack",
+    "Express",
+    "Slackbot",
+    "Server",
+    "GIT"
+  ],
+  "author": "Richard Rijnberk <r.rijnberk@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrijnberk/slackbot-server/issues"
+  },
+  "homepage": "https://github.com/rrijnberk/slackbot-server#readme"
+}
