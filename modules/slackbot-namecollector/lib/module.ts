@@ -82,21 +82,24 @@ function openCreationDialog(params) {
 }
 
 function listLabels(params) {
-    const files = fs.readdirSync(path.resolve('./', 'datastores', params.team_domain));
     let message = {
         text: 'As requested, here are the currently listed labels:',
         attachments: []
     };
+    try {
+        const files = fs.readdirSync(path.resolve('./', 'datastores', params.team_domain));
+        files.map(file => {
+            const content = fs.readJSONSync(path.resolve('./', 'datastores', params.team_domain, file));
 
-    let names = files.map(file => {
-        const content = fs.readJSONSync(path.resolve('./', 'datastores', params.team_domain, file));
+            message.attachments.push({
+                title: content.name,
+                // text: `Domains: www.${content.domain}.nl, www.${content.domain}.com, www.${content.domain}.io`
+            })
 
-        message.attachments.push({
-            title: content.name,
-            // text: `Domains: www.${content.domain}.nl, www.${content.domain}.com, www.${content.domain}.io`
-        })
-
-    });
+        });
+    } catch (error) {
+        console.error(error);
+    }
 
     if(message.attachments.length === 0) message.text = ('no labels currently available. Please use \'add\' to create a new label suggestion.');
     post(message, params);
