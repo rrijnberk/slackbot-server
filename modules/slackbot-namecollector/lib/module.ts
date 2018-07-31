@@ -32,20 +32,20 @@ function collectNameHandler(params) {
 }
 
 function createLabelHandler(params) {
-    const fileName = params.submission.lbl_name.replace(/\s/g, '_').toLowerCase().concat('.json');
-    const filePath = path.resolve('./', 'datastores', params.team.domain, fileName);
-    try {
-        fs.ensureFileSync(filePath, { mode: '666' });
-        fs.writeJSONSync(filePath, {
-            owner: params.user.name,
-            name: params.submission.lbl_name.toLowerCase(),
-            domain: params.submission.lbl_domain
-        });
-    } catch (e) {
-        console.error(e);
+    if(params.submission) {
+        const fileName = params.submission.lbl_name.replace(/\s/g, '_').toLowerCase().concat('.json');
+        const filePath = path.resolve('./', 'datastores', params.team.domain, fileName);
+        try {
+            fs.ensureFileSync(filePath, {mode: '666'});
+            fs.writeJSONSync(filePath, {
+                owner: params.user.name,
+                name: params.submission.lbl_name.toLowerCase(),
+                domain: params.submission.lbl_domain
+            });
+        } catch (e) {
+            console.error(e);
+        }
     }
-
-
 }
 
 function openCreationDialog(params) {
