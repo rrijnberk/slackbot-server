@@ -4,6 +4,7 @@
   "description": "NodeJS express server with git based installer for slack apps",
   "main": "lib/clis.ts",
   "scripts": {
+    "start": "node lib/cli.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/rrijnberk/slackbot-server/issues"
   },
-  "homepage": "https://github.com/rrijnberk/slackbot-server#readme"
+  "homepage": "https://github.com/rrijnberk/slackbot-server#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "fs-extra": "^7.0.0",
+    "git-clone": "^0.1.0"
+  }
 }
