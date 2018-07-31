@@ -12,6 +12,10 @@ const theRules = `Met betrekking tot de naam zijn de volgende regels opgesteld:
 
 const textDeconstructionRegex = /^(.*?)(\s(.*)){0,}$/;
 
+function printRules(params) {
+    post({text: theRules}, params)
+}
+
 function breakDownText(params) {
     const action = textDeconstructionRegex.exec(params.text)[1];
     return Object.assign(params, { action });
@@ -26,6 +30,10 @@ function collectNameHandler(params) {
             break;
         case 'list':
             listLabels(params);
+            break;
+        case 'rules':
+            printRules(params);
+            break;
         default:
             break;
     }
@@ -54,6 +62,7 @@ function openCreationDialog(params) {
         "dialog": {
             "callback_id": "name-collector",
             "title": "Submit your label name",
+            "text": theRules,
             "submit_label": "Submit",
             "notify_on_cancel": true,
             "elements": [
