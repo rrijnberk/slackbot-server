@@ -18,7 +18,7 @@ function printRules(params) {
 
 function breakDownText(params) {
     const action = textDeconstructionRegex.exec(params.text)[1];
-    return Object.assign(params, { action });
+    return Object.assign(params, {action});
 }
 
 function collectNameHandler(params) {
@@ -37,22 +37,38 @@ function collectNameHandler(params) {
         default:
             break;
     }
+
 }
 
 function createLabelHandler(params) {
-    if(params.submission) {
+    if (params.submission) {
         const fileName = params.submission.lbl_name.replace(/\s/g, '_').toLowerCase().concat('.json');
         const filePath = path.resolve('./', 'datastores', params.team.domain, fileName);
+        let response = {};
         try {
-            fs.ensureFileSync(filePath, {mode: '666'});
-            fs.writeJSONSync(filePath, {
-                owner: params.user.name,
-                name: params.submission.lbl_name.toLowerCase(),
-                domain: params.submission.lbl_domain
-            });
+            if (!fs.existsSync(filePath)) {
+                fs.ensureFileSync(filePath, {mode: '666'});
+                fs.writeJSONSync(filePath, {
+                    owner: params.user.name,
+                    name: params.submission.lbl_name.toLowerCase(),
+                    domain: params.submission.lbl_domain
+                });
+            } else {
+                response = {
+                    "ok": false,
+                    "error": "validation_errors",
+                    "response_metadata": {
+                        "messages": [
+                            'The name supplied already exists'
+                        ]
+                    }
+                }
+
+            }
         } catch (e) {
             console.error(e);
         }
+        return response;
     }
 }
 
@@ -70,11 +86,11 @@ function openCreationDialog(params) {
                     "type": "text",
                     "label": "Label name",
                     "name": "lbl_name"
-                // },
-                // {
-                //     "type": "text",
-                //     "label": "Domain",
-                //     "name": "lbl_domain"
+                    // },
+                    // {
+                    //     "type": "text",
+                    //     "label": "Domain",
+                    //     "name": "lbl_domain"
                 }
             ]
         }
@@ -90,9 +106,24 @@ function listLabels(params) {
         const files = fs.readdirSync(path.resolve('./', 'datastores', params.team_domain));
         files.map(file => {
             const content = fs.readJSONSync(path.resolve('./', 'datastores', params.team_domain, file));
+            const inCounterList = ['r.rijnberk'].indexOf(params.user_name) !== -1;
+            const votes = (inCounterList && content.voted ? content.voted.length : '0');
+            const allowedChannel = ['names-collector-bot', 'fe-label-talk'].indexOf(params.channel_name) !== -1;
+            const label = `${inCounterList && votes ? votes + ' : ' : ''}${content.name}`;
+            const hasVoted = content.voted && content.voted.indexOf(params.user_name) !== -1;
 
             message.attachments.push({
-                title: content.name,
+                title: !allowedChannel ? label : `Click to ${hasVoted ? 'remove ' : ''}vote`,
+                callback_id: "voting_system",
+                actions: allowedChannel ? [
+                    {
+                        name: content.name,
+                        text: label,
+                        style: hasVoted ? "danger" : undefined,
+                        type: "button",
+                        value: file
+                    }
+                ] : undefined
                 // text: `Domains: www.${content.domain}.nl, www.${content.domain}.com, www.${content.domain}.io`
             })
 
@@ -101,9 +132,28 @@ function listLabels(params) {
         console.error(error);
     }
 
-    if(message.attachments.length === 0) message.text = ('no labels currently available. Please use \'add\' to create a new label suggestion.');
+    if (message.attachments.length === 0) message.text = ('no labels currently available. Please use \'add\' to create a new label suggestion.');
     post(message, params);
+}
+
+function voteForLabelHandler(params) {
+    const filePath = path.resolve('./', 'datastores', params.team.domain, params.actions[0].value);
+    const content = fs.readJSONSync(filePath);
+
+    const hasVoted = content.voted && content.voted.indexOf(params.user.name) !== -1;
+
+    content.voted = (content.voted || []);
+    if(!hasVoted) {
+        content.voted.push(params.user.name);
+        fs.writeJSONSync(filePath, content);
+        return `Je hebt gestemd op ${params.actions[0].name}.`;
+    } else {
+        content.voted.splice(content.voted.indexOf(params.user.name, 1));
+        fs.writeJSONSync(filePath, content);
+        return `Je hebt je stem op ${params.actions[0].name} ingetrokken.`;
+    }
 }
 
 exports.collectName = collectNameHandler;
 exports.createLabel = createLabelHandler;
+exports.voteForLabel = voteForLabelHandler;

@@ -1,7 +1,7 @@
 const querystring = require('querystring');
 const express = require('express');
 const app = express();
-const {collectName, createLabel} = require('./../modules/slackbot-namecollector/lib/module.ts');
+const {collectName, createLabel, voteForLabel} = require('./../modules/slackbot-namecollector/lib/module.ts');
 
 
 app.get('/:endpoint', (req, res) => {
@@ -16,8 +16,14 @@ app.post('/:endpoint', function (req, res) {
                 req.params = null;
                 break;
             case 'dialogResponse':
-                createLabel(JSON.parse(querystring.parse(chunk.toString()).payload));
-                req.params = {};
+                let query = JSON.parse(querystring.parse(chunk.toString()).payload);
+                switch (query.callback_id) {
+                    case 'voting_system':
+                        req.params = voteForLabel(query);
+                        break;
+                    default:
+                        req.params = createLabel(query);
+                }
                 break;
             default:
                 console.error(`Call made to non-existent endpoint: '${req.params.endpoint}'!`);
